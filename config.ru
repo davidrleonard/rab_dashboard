@@ -1,7 +1,11 @@
 require 'dashing'
 
 configure do
-  set :auth_token, 'YOUR_AUTH_TOKEN'
+  if ENV['RACK_ENV']=="production"
+    set :auth_token, ENV['DASHING_AUTH_TOKEN']
+  else
+    set :auth_token, 'BLAH_BLAH_BLAH'
+  end
 
   helpers do
     def protected!
