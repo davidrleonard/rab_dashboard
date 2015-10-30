@@ -1,0 +1,13 @@
+## Update these to match your own apps credentials
+# service_account_email = '[YOUR SERVICE ACCOUNT EMAIL]' # Email of service account
+# key_file = 'path/to/your/keyfile.p12' # File containing your private key
+# key_secret = 'notasecret' # Password to unlock private key
+# profileID = '[YOUR PROFILE ID]' # Analytics profile ID.
+
+## Google Analytics Configuration
+service_account_email: 703771445888-dgqd9igpb497sadujqutp2j2uti01uhb@developer.gserviceaccount.com
+key_file: googlekey.p12
+key_secret: notasecret
+profileID: 106403258
+application_name: rab_dashboard
+application_version: 0.1

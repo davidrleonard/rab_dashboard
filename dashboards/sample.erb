@@ -1,10 +1,33 @@
 <% content_for :title do %>My super sweet dashboard<% end %>
 <div class="gridster">
   <ul>
-    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
-      <div data-id="welcome" data-view="Text" data-title="Hello" data-text="This is your shiny new dashboard." data-moreinfo="Protip: You can drag the widgets around!"></div>
+    <li data-row="1" data-col="1" data-sizex="4" data-sizey="1">
+      <div data-id="text_intro" data-view="Text" data-title="Radio Ambulante Dashboard" data-text="Data and metrics for Radio Ambulante" data-moreinfo="" style="background-color:#ff9618"></div>
     </li>
 
+    <%# ACQUISITION #%>
+    <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="welcome" data-view="Text" data-title="Acquisition" data-text="Where do our users come from?" data-moreinfo="" style="background-color:#2980B9"></div>
+    </li>
+    <li data-row="1" data-col="1" data-sizex="2" data-sizey="2">
+      <div data-id="referrals" data-view="List" data-unordered="false" data-title="Top Referrals This Month" data-moreinfo="Top social and direct referral sources excluding search (from Google Analytics)"></div>
+    </li>
+    <li data-row="2" data-col="1" data-sizex="2" data-sizey="1">
+      <div data-id="countries" data-view="List" data-unordered="false" data-title="Top Countries This Month" data-moreinfo="Top countries by visitor (from Google Analytics)" style="background-color:#2C3E50"></div>
+    </li>
+    <%#
+    <li data-row="3" data-col="4" data-sizex="2" data-sizey="1">
+        <div data-id="sample_graph" data-view="Rickshawgraph" data-renderer="bar" data-max="40"></div>
+    </li>
+    %>
+
+    <%# USE LATER: TOTAL VISITORS
+    <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
+      <div data-id="visitor_count" data-view="Number" data-title="Visitors This Month"></div>
+    </li>
+    #%>
+
+    <%#
     <li data-row="1" data-col="1" data-sizex="1" data-sizey="1">
       <div data-id="synergy" data-view="Meter" data-title="Synergy" data-min="0" data-max="100"></div>
     </li>
@@ -20,6 +43,7 @@
     <li data-row="1" data-col="1" data-sizex="2" data-sizey="1">
       <div data-id="convergence" data-view="Graph" data-title="Convergence" style="background-color:#ff9618"></div>
     </li>
+    #%>
   </ul>
   <center><div style="font-size: 12px">Try this: curl -d '{ "auth_token": "YOUR_AUTH_TOKEN", "text": "Hey, Look what I can do!" }' \http://<%=request.host%>:<%=request.port%>/widgets/welcome</div></center>
 </div>
