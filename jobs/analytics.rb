@@ -10,7 +10,8 @@ client = Google::APIClient.new(
 
 # Load your credentials for the service account
 if ENV['RACK_ENV']=="production"
-  key = Google::APIClient::KeyUtils.load_from_pkcs12(ENV['GOOGLE_KEY_P12'], opts['key_secret'])
+  key = OpenSSL::PKey::RSA.new ENV["GOOGLE_KEY_JSON"], opts['key_secret']
+  # key = Google::APIClient::KeyUtils.load_from_pkcs12(ENV['GOOGLE_KEY_P12'], opts['key_secret'])
 else
   key = Google::APIClient::KeyUtils.load_from_pkcs12(File.expand_path("../../lib/#{opts['key_file']}", __FILE__), opts['key_secret'])
 end
