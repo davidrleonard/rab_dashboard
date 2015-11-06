@@ -1,5 +1,7 @@
 require 'google/api_client'
 require 'date'
+require 'active_support/core_ext/date/calculations' # Help parsing dates
+require 'soundcloud'
 
 opts = YAML.load_file(File.expand_path("../../lib/google_config.yml", __FILE__))
 
@@ -23,35 +25,52 @@ client.authorization = Signet::OAuth2::Client.new(
   :signing_key => key)
 
 # Start the scheduler
-SCHEDULER.every '1m', :first_in => 0 do
+SCHEDULER.every '10m', :first_in => 0 do
 
   # SETUP FOR ALL QUERIES
   # Request a token for our service account
   client.authorization.fetch_access_token!
   # Get the analytics API
   analytics = client.discovered_api('analytics','v3')
-  # Start and end dates
-  startDate = DateTime.now.strftime("%Y-%m-01") # first day of current month
-  endDate = DateTime.now.strftime("%Y-%m-%d")  # now
+  # Start and end dates for this month
+  ### thisMonthStartDate = DateTime.now.strftime("%Y-%m-01") # first day of current month
+  ### thisMonthEndDate = DateTime.now.strftime("%Y-%m-%d")  # now
+  thisMonthStartDate = Date.today.beginning_of_month.to_s # first day of current month
+  thisMonthEndDate = Date.today.to_s  # now
+  # How many days so far this month, for comparison to last month?
+  daysElapsedThisMonth = (Date.today - Date.today.beginning_of_month).to_i
+  # Start and end dates for last month
+  lastMonthStartDate = Date.today.beginning_of_month.last_month.to_s # first day of the previous month
+  ### lastMonthEndDate = Date.today.beginning_of_month.prev_day.to_s # last day of the previous month
+  lastMonthEndDate = (Date.today.beginning_of_month.last_month + daysElapsedThisMonth).to_s # for comparison, same number of days elapsed last month
 
   # VISIT COUNT QUERY
-  visitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+  thisMonthVisitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
-    'start-date' => startDate,
-    'end-date' => endDate,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
     # 'dimensions' => "ga:month",
     'metrics' => "ga:visitors",
     # 'sort' => "ga:month"
   })
-  # puts visitData.data.inspect
-  # puts visitData.data.rows[0][0].to_i
-  visitCount = visitData.data.rows[0][0].to_i
+  lastMonthVisitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => lastMonthStartDate,
+    'end-date' => lastMonthEndDate,
+    # 'dimensions' => "ga:month",
+    'metrics' => "ga:visitors",
+    # 'sort' => "ga:month"
+  })
+  # puts thisMonthVisitData.data.inspect
+  # puts thisMonthVisitData.data.rows[0][0].to_i
+  thisMonthActiveUsers = thisMonthVisitData.data.rows[0][0].to_i
+  lastMonthActiveUsers = lastMonthVisitData.data.rows[0][0].to_i
 
   # REFERRALS QUERY
   referralData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
-    'start-date' => startDate,
-    'end-date' => endDate,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
     'metrics' => "ga:users",
     'sort' => "-ga:users",
     'dimensions' => "ga:sourceMedium",
@@ -66,8 +85,8 @@ SCHEDULER.every '1m', :first_in => 0 do
   # COUNTRIES QUERY
   countryData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
-    'start-date' => startDate,
-    'end-date' => endDate,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
     'metrics' => "ga:users",
     'sort' => "-ga:users",
     'dimensions' => "ga:country",
@@ -78,8 +97,48 @@ SCHEDULER.every '1m', :first_in => 0 do
     countryList.push({ 'label' => country[0], 'value' => country[1] })
   end
 
+  # PERCENT NEW USERS QUERY
+  newUsersData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
+    'metrics' => "ga:percentNewSessions"
+  })
+  newUsers = newUsersData.data.rows[0][0].to_i
+
+  # TOP GOOGLE ANALYTICS EVENTS
+  eventData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
+    'metrics' => "ga:totalEvents",
+    'sort' => "-ga:totalEvents",
+    'dimensions' => "ga:eventCategory"
+  })
+  eventList = []
+  eventData.data.rows.each do |country|
+    next if country[0] == 'Error'
+    next if country[0] == 'SoundCloud'
+    next if country[0] == 'undefined'
+    eventList.push({ 'label' => country[0], 'value' => country[1] })
+  end
+
+  # AVERAGE TIME ON SITE
+  thisMonthAvgSessionDurationData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
+    'metrics' => "ga:avgSessionDuration"
+  })
+  thisMonthAvgSessionDuration = thisMonthAvgSessionDurationData.data.rows[0][0].to_i / 60
+
   # UPDATE THE DASHBOARD
-  send_event('visitor_count',   { current: visitCount })
-  send_event('referrals',       { items: referralList })
-  send_event('countries',       { items: countryList })
+  send_event('active_users',      { current: thisMonthActiveUsers,
+                                    last: lastMonthActiveUsers })
+  send_event('referrals',         { items: referralList })
+  send_event('countries',         { items: countryList })
+  send_event('new_users',         { value: newUsers })
+  send_event('events',            { items: eventList })
+  send_event('session_duration',  { current: thisMonthAvgSessionDuration,
+                                    last: 5 })
 end
