@@ -12,9 +12,6 @@ else
   SC_CONFIG['password'] = ENV['SC_PASSWORD']
 end
 
-puts 'CONFIG\n'
-puts SC_CONFIG
-
 # Get the Soundcloud API client
 client = Soundcloud.new(
   :client_id => SC_CONFIG['client_id'],
