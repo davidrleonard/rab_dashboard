@@ -124,7 +124,8 @@ SCHEDULER.every '10m', :first_in => 0 do
     'dimensions' => "ga:eventCategory"
   })
   eventList = []
-  eventData.data.rows.each do |country|
+  eventData.data.rows.each_with_index do |country, index|
+    break if index > 7
     next if country[0] == 'Error'
     next if country[0] == 'SoundCloud'
     next if country[0] == 'undefined'
