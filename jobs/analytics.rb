@@ -32,17 +32,22 @@ SCHEDULER.every '10m', :first_in => 0 do
   client.authorization.fetch_access_token!
   # Get the analytics API
   analytics = client.discovered_api('analytics','v3')
-  # Start and end dates for this month
-  ### thisMonthStartDate = DateTime.now.strftime("%Y-%m-01") # first day of current month
-  ### thisMonthEndDate = DateTime.now.strftime("%Y-%m-%d")  # now
-  thisMonthStartDate = Date.today.beginning_of_month.to_s # first day of current month
-  thisMonthEndDate = Date.today.to_s  # now
-  # How many days so far this month, for comparison to last month?
-  daysElapsedThisMonth = (Date.today - Date.today.beginning_of_month).to_i
+
+  # # START AND END DATES FOR CURRENT MONTH
+  # thisMonthStartDate = Date.today.beginning_of_month.to_s # first day of current month
+  # thisMonthEndDate = Date.today.to_s  # now
+  # # How many days so far this month, for comparison to last month?
+  # daysElapsedThisMonth = (Date.today - Date.today.beginning_of_month).to_i
+  # # Start and end dates for last month
+  # lastMonthStartDate = Date.today.beginning_of_month.last_month.to_s # first day of the previous month
+  # lastMonthEndDate = (Date.today.beginning_of_month.last_month + daysElapsedThisMonth).to_s # for comparison, same number of days elapsed last month
+
+  # START AND END DATES FOR LAST 30, 60 DAYS
+  thisMonthStartDate = (Date.today - 30).to_s # 30 days ago
+  thisMonthEndDate = Date.today.to_s  # today
   # Start and end dates for last month
-  lastMonthStartDate = Date.today.beginning_of_month.last_month.to_s # first day of the previous month
-  ### lastMonthEndDate = Date.today.beginning_of_month.prev_day.to_s # last day of the previous month
-  lastMonthEndDate = (Date.today.beginning_of_month.last_month + daysElapsedThisMonth).to_s # for comparison, same number of days elapsed last month
+  lastMonthStartDate = (Date.today - 60).to_s # 60 days ago
+  lastMonthEndDate = (Date.today - 30).to_s # 30 days ago
 
   # VISIT COUNT QUERY
   thisMonthVisitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
@@ -61,7 +66,7 @@ SCHEDULER.every '10m', :first_in => 0 do
     'metrics' => "ga:visitors",
     # 'sort' => "ga:month"
   })
-  # puts thisMonthVisitData.data.inspect
+  # puts lastMonthVisitData.data.inspect
   # puts thisMonthVisitData.data.rows[0][0].to_i
   thisMonthActiveUsers = thisMonthVisitData.data.rows[0][0].to_i
   lastMonthActiveUsers = lastMonthVisitData.data.rows[0][0].to_i
