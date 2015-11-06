@@ -84,7 +84,10 @@ SCHEDULER.every '10m', :first_in => 0 do
   })
   referralList = []
   referralData.data.rows.each do |referral|
-    referralList.push({ 'label' => referral[0].gsub(' / referral', ''), 'value' => referral[1] })
+    referralList.push({
+      'label' => referral[0].gsub(' / referral', ''),
+      'value' => referral[1],
+      'url' => "http://#{referral[0].gsub(' / referral', '')}"})
   end
 
   # COUNTRIES QUERY
