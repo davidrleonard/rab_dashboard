@@ -26,7 +26,7 @@ SCHEDULER.every '60m', :first_in => 0 do
 
   # GET ALL TRACKS, LOOP OVER THEM FOR A TOTAL PLAY COUNT LIFETIME
   plays = 0
-  tracks = client.get('/me/tracks')
+  tracks = client.get('/me/tracks', :limit => 1000) # arbitrarily limit the number of tracks to 1000... we're in the 120's now
   tracks.each do |track|
     plays += track['playback_count'].to_i
   end
