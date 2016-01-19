@@ -130,7 +130,7 @@ SCHEDULER.every '10m', :first_in => 0 do
     next if country[0] == 'Error'
     next if country[0] == 'SoundCloud'
     next if country[0] == 'undefined'
-    eventList.push({ 'label' => country[0], 'value' => country[1] })
+    eventList.push({ 'label' => country[0], 'value' => country[2] })
   end
 
   # GET SOUNDCLOUD PLAY DEPTH EVENTS
