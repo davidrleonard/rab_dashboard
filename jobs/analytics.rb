@@ -125,17 +125,17 @@ SCHEDULER.every '10m', :first_in => 0 do
     'max-results' => 100
   })
   eventList = []
-  eventData.data.rows.each_with_index do |country, index|
-    break if index > 7
-    next if country[0] == 'Error'
-    next if country[0] == 'SoundCloud'
-    next if country[0] == 'undefined'
-    eventList.push({ 'label' => country[0], 'value' => country[2] })
+  eventData.data.rows.each do |data|
+    break if eventList.length > 7
+    next if data[0] == 'Error'
+    next if data[0] == 'SoundCloud'
+    next if data[0] == 'undefined'
+    eventList.push({ 'label' => data[0], 'value' => data[2] })
   end
 
   # GET SOUNDCLOUD PLAY DEPTH EVENTS
   listenList = []
-  eventData.data.rows.each_with_index do |data, index|
+  eventData.data.rows.each do |data|
     # Here's the schema for `data`, which is an array with 3 items inside
     # * data[0] (STRING) - The event category, like 'SoundCloud' or 'Error'
     # * data[1] (STRING) - The event label, like '100%' or '20%' depth into play
