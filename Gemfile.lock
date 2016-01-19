@@ -158,5 +158,7 @@ DEPENDENCIES
   activesupport
   dashing
   google-api-client
+  http
+  json
   soundcloud
   twitter (>= 5.9.0)
