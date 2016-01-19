@@ -121,7 +121,8 @@ SCHEDULER.every '10m', :first_in => 0 do
     'end-date' => thisMonthEndDate,
     'metrics' => "ga:totalEvents",
     'sort' => "-ga:totalEvents",
-    'dimensions' => "ga:eventCategory"
+    'dimensions' => "ga:eventCategory,ga:eventAction",
+    'max-results' => 100
   })
   eventList = []
   eventData.data.rows.each_with_index do |country, index|
@@ -130,6 +131,20 @@ SCHEDULER.every '10m', :first_in => 0 do
     next if country[0] == 'SoundCloud'
     next if country[0] == 'undefined'
     eventList.push({ 'label' => country[0], 'value' => country[1] })
+  end
+
+  # GET SOUNDCLOUD PLAY DEPTH EVENTS
+  listenList = []
+  eventData.data.rows.each_with_index do |data, index|
+    # Here's the schema for `data`, which is an array with 3 items inside
+    # * data[0] (STRING) - The event category, like 'SoundCloud' or 'Error'
+    # * data[1] (STRING) - The event label, like '100%' or '20%' depth into play
+    # * data[2] (INT) - Total count for how many events fit this category/label
+    # For example, the array could be: ['SoundCloud','100%',12000]
+    next if data[0] != 'SoundCloud'
+    next unless data[1].end_with?('%')
+    puts "#{data[0]} -- #{data[1]} -- #{data[2]}"
+    listenList.push({ 'label' => "#{data[0]} #{data[1]} Listen", 'value' => data[2] })
   end
 
   # AVERAGE TIME ON SITE
@@ -148,6 +163,7 @@ SCHEDULER.every '10m', :first_in => 0 do
   send_event('countries',         { items: countryList })
   send_event('new_users',         { value: newUsers })
   send_event('events',            { items: eventList })
+  send_event('listener_depth',    { items: listenList })
   send_event('session_duration',  { current: thisMonthAvgSessionDuration,
                                     last: 5 })
 end
