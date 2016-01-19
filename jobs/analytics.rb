@@ -141,10 +141,17 @@ SCHEDULER.every '10m', :first_in => 0 do
     # * data[1] (STRING) - The event label, like '100%' or '20%' depth into play
     # * data[2] (INT) - Total count for how many events fit this category/label
     # For example, the array could be: ['SoundCloud','100%',12000]
+
+    # Skip if this isn't a SoundCloud related event
     next if data[0] != 'SoundCloud'
-    next unless data[1].end_with?('%')
-    puts "#{data[0]} -- #{data[1]} -- #{data[2]}"
-    listenList.push({ 'label' => "#{data[0]} #{data[1]} Listen", 'value' => data[2] })
+    # Get the percentage depth plays and put them into a list
+    if data[1].end_with?('%')
+      # TEMPORARY HACK: while old google anlaytics data rolls off the last month query, hide these numbers
+      # REMOVE AFTER FEB. 19, 2016
+      next if data[1].include?('25') or data[1].include?('50') or data[1].include?('75') or data[1].include?('100')
+      # END REMOVE
+      listenList.push({ 'label' => "#{data[0]} #{data[1]} Listen", 'value' => data[2] })
+    end
   end
 
   # AVERAGE TIME ON SITE
