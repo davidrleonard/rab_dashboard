@@ -12,3 +12,6 @@ gem 'twitter', '>= 5.9.0'
 # Helps get and parse JSON from external APIs
 gem 'http'
 gem 'json'
+
+# For debugging code
+gem 'pry', :group => :development
