@@ -135,6 +135,8 @@ SCHEDULER.every '10m', :first_in => 0 do
 
   # GET SOUNDCLOUD PLAY DEPTH EVENTS
   listenList = []
+  # get the value for people who started playing (0%) so we can compare other numbers to it
+  listenTotal = eventData.data.rows.select { |data| data[1].eql?('0%') }.slice(0).slice(2).to_i
   eventData.data.rows.each do |data|
     # Here's the schema for `data`, which is an array with 3 items inside
     # * data[0] (STRING) - The event category, like 'SoundCloud' or 'Error'
@@ -150,7 +152,7 @@ SCHEDULER.every '10m', :first_in => 0 do
       # REMOVE AFTER FEB. 19, 2016
       next if data[1].include?('25') or data[1].include?('50') or data[1].include?('75') or data[1].include?('100')
       # END REMOVE
-      listenList.push({ 'label' => "#{data[0]} #{data[1]} Listen", 'value' => data[2] })
+      listenList.push({ 'label' => "#{data[0]} #{data[1]} Listen", 'value' => "#{data[2]} (#{(data[2].to_f/listenTotal*100).round(1)}%)" })
     end
   end
 
