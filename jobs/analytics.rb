@@ -105,6 +105,16 @@ SCHEDULER.every '10m', :first_in => 0 do
   referralMediumData.data.rows.each do |data|
     referralMediumList.push({ 'label' => data[0], 'value' => "#{((data[1].to_f/referralMediumTotal)*100).round(2)}%" })
   end
+
+  # WHAT IS OUR BOUNCE RATE?
+  bounceRate = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
+    'metrics' => "ga:bounceRate",
+    'max-results' => 1
+  }).data.rows[0][0].to_f.round(2)
+
   # COUNTRIES QUERY
   countryData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
