@@ -50,26 +50,22 @@ SCHEDULER.every '10m', :first_in => 0 do
   lastMonthEndDate = (Date.today - 30).to_s # 30 days ago
 
   # VISIT COUNT QUERY
-  thisMonthVisitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+  thisMonthActiveUsers = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
     'start-date' => thisMonthStartDate,
     'end-date' => thisMonthEndDate,
     # 'dimensions' => "ga:month",
-    'metrics' => "ga:visitors",
+    'metrics' => "ga:users",
     # 'sort' => "ga:month"
-  })
-  lastMonthVisitData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+  }).data.rows[0][0].to_i
+  lastMonthActiveUsers = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
     'start-date' => lastMonthStartDate,
     'end-date' => lastMonthEndDate,
     # 'dimensions' => "ga:month",
-    'metrics' => "ga:visitors",
+    'metrics' => "ga:users",
     # 'sort' => "ga:month"
-  })
-  # puts lastMonthVisitData.data.inspect
-  # puts thisMonthVisitData.data.rows[0][0].to_i
-  thisMonthActiveUsers = thisMonthVisitData.data.rows[0][0].to_i
-  lastMonthActiveUsers = lastMonthVisitData.data.rows[0][0].to_i
+  }).data.rows[0][0].to_i
 
   # REFERRALS QUERY
   referralData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
@@ -131,13 +127,12 @@ SCHEDULER.every '10m', :first_in => 0 do
   end
 
   # PERCENT NEW USERS QUERY
-  newUsersData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+  newUsers = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
     'start-date' => thisMonthStartDate,
     'end-date' => thisMonthEndDate,
     'metrics' => "ga:percentNewSessions"
-  })
-  newUsers = newUsersData.data.rows[0][0].to_i
+  }).data.rows[0][0].to_i
 
   # TOP GOOGLE ANALYTICS EVENTS
   eventData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
@@ -182,18 +177,19 @@ SCHEDULER.every '10m', :first_in => 0 do
   end
 
   # AVERAGE TIME ON SITE
-  thisMonthAvgSessionDurationData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+  thisMonthAvgSessionDuration = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
     'start-date' => thisMonthStartDate,
     'end-date' => thisMonthEndDate,
     'metrics' => "ga:avgSessionDuration"
-  })
-  thisMonthAvgSessionDuration = thisMonthAvgSessionDurationData.data.rows[0][0].to_i / 60
+  }).data.rows[0][0].to_i / 60
 
   # UPDATE THE DASHBOARD
   send_event('active_users',      { current: thisMonthActiveUsers,
                                     last: lastMonthActiveUsers })
   send_event('referrals',         { items: referralList })
+  send_event('referral_mediums',  { items: referralMediumList })
+  send_event('bounce_rate',       { current: bounceRate })
   send_event('countries',         { items: countryList })
   send_event('new_users',         { value: newUsers })
   send_event('events',            { items: eventList })
