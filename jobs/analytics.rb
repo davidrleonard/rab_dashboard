@@ -90,6 +90,21 @@ SCHEDULER.every '10m', :first_in => 0 do
       'url' => "http://#{referral[0].gsub(' / referral', '')}"})
   end
 
+  # WHAT PERCENTAGE OF OUR USERS ARE REFERRALS?
+  referralMediumData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
+    'ids' => "ga:" + opts['profileID'].to_s,
+    'start-date' => thisMonthStartDate,
+    'end-date' => thisMonthEndDate,
+    'metrics' => "ga:users",
+    'sort' => "-ga:users",
+    'dimensions' => "ga:medium",
+    'max-results' => 10
+  })
+  referralMediumTotal = referralMediumData.data.rows.inject(0) { |sum, i| sum + i[1].to_i }
+  referralMediumList = []
+  referralMediumData.data.rows.each do |data|
+    referralMediumList.push({ 'label' => data[0], 'value' => "#{((data[1].to_f/referralMediumTotal)*100).round(2)}%" })
+  end
   # COUNTRIES QUERY
   countryData = client.execute(:api_method => analytics.data.ga.get, :parameters => {
     'ids' => "ga:" + opts['profileID'].to_s,
