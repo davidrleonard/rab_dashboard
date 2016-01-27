@@ -98,7 +98,7 @@ SCHEDULER.every '10m', :first_in => 0 do
     'metrics' => "ga:users",
     'sort' => "-ga:users",
     'dimensions' => "ga:country",
-    'max-results' => 7
+    'max-results' => 15
   })
   countryList = []
   countryData.data.rows.each do |country|
